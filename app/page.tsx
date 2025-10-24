@@ -202,7 +202,7 @@ const MainPage = () => {
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Plus className="h-5 w-5 text-blue-500" />
-                    할일 관리
+                    AI 할일 관리 서비스
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
