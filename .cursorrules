@@ -1,0 +1,237 @@
+# AI 할일 관리 프로젝트 개발 규칙
+
+## 프로젝트 개요
+Next.js 15 App Router 기반의 AI 할일 관리 웹 애플리케이션으로, 사용자 경험을 최우선으로 하는 모던 웹 애플리케이션입니다.
+
+## 핵심 원칙
+
+### 1. 사용자 경험 최우선
+- 모든 컴포넌트는 로딩 상태, 빈 상태, 오류 상태 UI를 제공해야 합니다
+- 사용자 상호작용 지연을 최소화하고 즉각적인 피드백을 제공합니다
+- 로딩 스피너, 스켈레톤 UI, 진행률 표시기 등을 적극 활용합니다
+
+### 2. 오류 처리 철저
+- 서버와 클라이언트 모든 레이어에서 예외를 포착합니다
+- 사용자에게는 한글로 친절하고 이해하기 쉬운 오류 메시지를 제공합니다
+- 개발 환경에서는 상세한 로그를 출력하여 디버깅을 용이하게 합니다
+- 오류 발생 시 사용자가 취할 수 있는 액션을 제시합니다
+
+## 기술 스택 및 설정
+
+### 프레임워크 및 언어
+- **Next.js 15**: App Router 사용 필수
+- **TypeScript**: strict 모드 권장, 모든 파일에 타입 정의 필수
+- **React 19**: 최신 기능 활용
+
+### 스타일링
+- **Tailwind CSS**: 유틸리티 퍼스트 접근법
+- **Shadcn/ui**: 일관된 디자인 시스템을 위한 UI 컴포넌트
+- **Lucide React**: 아이콘 라이브러리
+
+### 백엔드 및 데이터
+- **Supabase**: 인증, 데이터베이스, 실시간 기능
+- **AI SDK**: AI 모델 연동 및 스트리밍
+
+### 개발 도구
+- **ESLint**: Next.js 및 TypeScript 규칙 기반
+- **Prettier**: 코드 포맷팅
+
+## 코딩 스타일 및 규칙
+
+### 컴포넌트 작성 규칙
+```typescript
+/**
+ * 할일 목록을 표시하는 컴포넌트입니다.
+ * 사용자의 할일 목록을 카드 형태로 렌더링하고 완료/삭제 기능을 제공합니다.
+ */
+const TodoList = () => {
+  // 컴포넌트 로직
+  return (
+    // JSX
+  );
+};
+
+export default TodoList;
+```
+
+### 파일 명명 규칙
+- 컴포넌트 파일: **파스칼 케이스** (예: `TodoList.tsx`, `UserProfile.tsx`)
+- 유틸리티 함수: **카멜 케이스** (예: `formatDate.ts`, `validateInput.ts`)
+- 페이지 파일: **소문자** (예: `page.tsx`, `layout.tsx`)
+- API 라우트: **소문자** (예: `route.ts`)
+
+### 함수 작성 규칙
+- **화살표 함수** 사용 필수
+- 모든 함수는 JSDoc으로 한글 설명 추가
+- 매개변수와 반환값에 타입 정의 필수
+
+```typescript
+/**
+ * 할일을 생성하는 함수입니다.
+ * @param todoData - 생성할 할일 데이터
+ * @returns 생성된 할일 객체
+ */
+const createTodo = async (todoData: CreateTodoData): Promise<Todo> => {
+  // 함수 로직
+};
+```
+
+### 상태 관리 규칙
+- `useState`와 `useEffect`를 기본으로 사용
+- 복잡한 상태는 `useReducer` 고려
+- 서버 상태는 React Query 또는 SWR 활용
+- 전역 상태는 Context API 또는 Zustand 사용
+
+### 오류 처리 패턴
+```typescript
+const handleError = (error: unknown) => {
+  console.error('오류 발생:', error);
+  
+  if (error instanceof Error) {
+    toast.error(error.message);
+  } else {
+    toast.error('예상치 못한 오류가 발생했습니다.');
+  }
+};
+```
+
+## 컴포넌트 구조 규칙
+
+### 페이지 컴포넌트
+```typescript
+/**
+ * 할일 관리 메인 페이지입니다.
+ * 사용자의 할일 목록과 AI 추천 기능을 제공합니다.
+ */
+const TodoPage = () => {
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // 로딩 상태 처리
+  if (loading) return <LoadingSpinner />;
+  
+  // 오류 상태 처리
+  if (error) return <ErrorMessage message={error} />;
+  
+  // 빈 상태 처리
+  if (todos.length === 0) return <EmptyState />;
+
+  return (
+    <div>
+      {/* 메인 컨텐츠 */}
+    </div>
+  );
+};
+```
+
+### 재사용 가능한 컴포넌트
+- Props 인터페이스 정의 필수
+- 기본값 설정
+- 접근성(a11y) 고려
+- 반응형 디자인 적용
+
+## API 및 데이터 처리
+
+### API Route 작성 규칙
+```typescript
+/**
+ * 할일 생성 API 엔드포인트입니다.
+ * POST /api/todos
+ */
+export const POST = async (request: Request) => {
+  try {
+    const body = await request.json();
+    
+    // 입력 검증
+    const validatedData = validateTodoData(body);
+    
+    // 데이터베이스 작업
+    const todo = await createTodo(validatedData);
+    
+    return Response.json(todo);
+  } catch (error) {
+    console.error('할일 생성 오류:', error);
+    return Response.json(
+      { error: '할일 생성 중 오류가 발생했습니다.' },
+      { status: 500 }
+    );
+  }
+};
+```
+
+### 데이터베이스 스키마
+- Supabase 테이블은 명확한 관계 설정
+- 인덱스 최적화 고려
+- 데이터 무결성 제약 조건 설정
+
+## 성능 최적화 규칙
+
+### 이미지 최적화
+- Next.js Image 컴포넌트 사용 필수
+- 적절한 크기와 포맷 선택
+
+### 번들 최적화
+- 동적 임포트 활용
+- 불필요한 라이브러리 제거
+- Tree shaking 최적화
+
+### 렌더링 최적화
+- React.memo 적절한 사용
+- useMemo, useCallback으로 불필요한 재계산 방지
+
+## 보안 규칙
+
+### 인증 및 인가
+- Supabase Auth 활용
+- JWT 토큰 관리
+- 세션 만료 처리
+
+### 데이터 보안
+- 입력 데이터 검증 및 sanitization
+- SQL 인젝션 방지
+- XSS 공격 방지
+
+## 테스트 규칙
+
+### 단위 테스트
+- 중요한 비즈니스 로직에 대한 테스트 작성
+- Jest와 React Testing Library 사용
+
+### 통합 테스트
+- API 엔드포인트 테스트
+- 사용자 플로우 테스트
+
+## 배포 및 환경 설정
+
+### 환경 변수
+- `.env.local` 파일에 민감한 정보 저장
+- 환경별 설정 분리
+
+### 빌드 최적화
+- 프로덕션 빌드 최적화
+- 번들 크기 모니터링
+
+## 코드 리뷰 체크리스트
+
+- [ ] 한글 주석이 모든 함수와 컴포넌트에 작성되었는가?
+- [ ] TypeScript 타입이 모든 곳에 정의되었는가?
+- [ ] 로딩, 빈 상태, 오류 상태 UI가 구현되었는가?
+- [ ] ESLint 규칙을 준수하는가?
+- [ ] 반응형 디자인이 적용되었는가?
+- [ ] 접근성이 고려되었는가?
+- [ ] 성능 최적화가 적용되었는가?
+
+## 추가 가이드라인
+
+### AI 기능 구현 시
+- 스트리밍 응답 처리
+- 로딩 상태 표시
+- 오류 복구 메커니즘
+
+### 실시간 기능 구현 시
+- Supabase Realtime 활용
+- 연결 상태 관리
+- 오프라인 지원 고려
+
+이 규칙들을 준수하여 일관성 있고 유지보수가 용이한 코드를 작성하세요.
